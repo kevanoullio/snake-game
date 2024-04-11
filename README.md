@@ -17,9 +17,20 @@ git clone
 pip install -r requirements.txt
 ```
 
-3. Run the game
+or
+
 ```bash
-python snake.py
+conda install --file requirements.txt
+```
+
+3. Change the directory
+```bash
+cd source
+```
+
+4. Run the game
+```bash
+python snake_game.py
 ```
 
 ## Screenshot

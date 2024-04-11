@@ -182,7 +182,7 @@ class SnakeGame:
         self.display.fill(self.colors.blue)
 
         # Define the font style
-        font_style = pygame.font.SysFont(None, 50) # Ignore the error for None
+        font_style = pygame.font.SysFont(None, 50) # type: ignore
         
         # Define the game over text
         game_over_text = ["You Lost!", "Press 'Q' to Quit", "or 'C' to Play Again"]
