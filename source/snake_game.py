@@ -1,5 +1,4 @@
 import pygame
-import time
 import random
 
 
@@ -32,10 +31,12 @@ class Snake:
         # Snake parameters
         self.block_size: int = 10
         self.speed: int = 20
+
         # Snake head and body
         self.head: list = []
         self.list: list = []
-        self.length: int = 3
+        self.length: int = 1
+        
         # Snake vector
         self.vector: Vector = Vector(0, 0)
 
@@ -265,7 +266,10 @@ class SnakeGame:
             # Update and draw the snake
             self.snake.update_body()
             self.snake.draw(self.display, self.colors)
-            self.snake.check_self_collision()
+
+            # Check if the snake has collided with itself
+            if self.snake.check_self_collision():
+                self.game_over = True
 
             # Update the display
             pygame.display.update()
