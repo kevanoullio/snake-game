@@ -3,15 +3,13 @@ import time
 import random
 
 
-def define_colors() -> dict:
-    # Define the colors
-    white = (255, 255, 255)
-    black = (0, 0, 0)
-    red = (255, 0, 0)
-    blue = (50, 153, 213)
-    green = (0, 255, 0)
-
-    return {"white": white, "black": black, "red": red, "blue": blue, "green": green}
+class Colors:
+    def __init__(self):
+        self.white = (255, 255, 255)
+        self.black = (0, 0, 0)
+        self.red = (255, 0, 0)
+        self.blue = (50, 153, 213)
+        self.green = (0, 255, 0)
 
 
 def initialize_game() -> tuple:
@@ -55,16 +53,16 @@ def check_food_consumption(x1: int, y1: int, food_x: int, food_y: int, display_w
     return food_x, food_y, snake_length
 
 
-def draw_snake(display: pygame.Surface, snake_color: dict, snake_list: list, snake_block: int) -> None:
+def draw_snake(display: pygame.Surface, colors: Colors, snake_list: list, snake_block: int) -> None:
     for x in snake_list:
-        pygame.draw.rect(display, snake_color["white"], [x[0], x[1], snake_block, snake_block])
+        pygame.draw.rect(display, colors.white, [x[0], x[1], snake_block, snake_block])
 
 
 # Define the game loop
 def gameLoop():
     # Initialize the game variables
     clock, display, display_width, display_height, snake_block, snake_speed, snake_list, snake_length = initialize_game()
-    colors = define_colors()
+    colors = Colors()
     game_over = False
     game_close = False
 
@@ -85,7 +83,7 @@ def gameLoop():
 
         # Display the game over screen
         while game_close == True:
-            display.fill(colors["blue"])
+            display.fill(colors.blue)
             pygame.display.update()
 
             # Define the font style
@@ -99,7 +97,7 @@ def gameLoop():
 
             # Display the game over message
             for line in game_over_text:
-                message = font_style.render(line, True, colors["red"])
+                message = font_style.render(line, True, colors.red)
                 display.blit(message, [display_width / 6, y])
                 y += font_style.get_height()
 
@@ -140,10 +138,10 @@ def gameLoop():
         y1 += y1_change
 
         # Fill the display with the background color
-        display.fill(colors["blue"])
+        display.fill(colors.blue)
 
         # Draw the food
-        pygame.draw.rect(display, colors["green"], [food_x, food_y, snake_block, snake_block])
+        pygame.draw.rect(display, colors.green, [food_x, food_y, snake_block, snake_block])
 
         # Initialize the snake head
         snake_Head = []
