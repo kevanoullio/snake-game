@@ -12,34 +12,96 @@ class Colors:
         self.green = (0, 255, 0)
 
 
+class Vector:
+    def __init__(self, x: int, y: int, dx: int = 0, dy: int = 0) -> None:
+        self.x = x
+        self.y = y
+        self.dx = dx  # Change in x (direction along x-axis)
+        self.dy = dy  # Change in y (direction along y-axis)
+
+    def set_position(self, x: int, y: int) -> None:
+        self.x = x
+        self.y = y
+
+    def get_position(self) -> tuple:
+        return self.x, self.y
+
+
 class Snake:
     def __init__(self, snake_block: int, snake_speed: int) -> None:
+        # Snake parameters
         self.block: int = snake_block
         self.speed: int = snake_speed
+        # Snake head and body
         self.head: list = []
         self.list: list = []
         self.length: int = 1
-        # Snake position
-        self.x1: int = 0
-        self.y1: int = 0
-        # Snake direction
-        self.x1_change: int = 0
-        self.y1_change: int = 0
+        # Snake vector
+        self.vector: Vector = Vector(0, 0)
 
     def set_initial_position(self, display_width: int, display_height: int) -> None:
-        self.x1 = int(display_width / 2)
-        self.y1 = int(display_height / 2)
+        self.vector.x = int(display_width / 2)
+        self.vector.y = int(display_height / 2)
 
     def set_initial_change_in_position(self, x1_change: int, y1_change: int) -> None:
-        self.x1_change = x1_change
-        self.y1_change = y1_change
+        self.vector.dx = x1_change
+        self.vector.dy = y1_change
+
+    def move_up(self) -> None:
+        self.vector.dy = -self.block
+        self.vector.dx = 0
+
+    def move_down(self) -> None:
+        self.vector.dy = self.block
+        self.vector.dx = 0
+    
+    def move_left(self) -> None:
+        self.vector.dx = -self.block
+        self.vector.dy = 0
+    
+    def move_right(self) -> None:
+        self.vector.dx = self.block
+        self.vector.dy = 0
+    
+    def get_head_position(self) -> tuple:
+        return self.list[-1]
+    
+    def update_body(self) -> None:
+        # Get the head position
+        x1, y1 = self.get_head_position()
+
+        # Update the head position
+        x1 += self.vector.dx
+        y1 += self.vector.dy
+        self.list.append([x1, y1])
+
+        # Check if the length of the snake is greater than the required length
+        if len(self.list) > self.length:
+            del self.list[0]
+    
+    def check_self_collision(self) -> bool:
+        # Get the head position
+        x1, y1 = self.get_head_position()
+
+        # Check if the snake has collided with itself
+        for x in self.list[:-1]:
+            if x == [x1, y1]:
+                return True
+        return False
+
+    def draw(self, display: pygame.Surface, colors: Colors) -> None:
+        for x in self.list:
+            pygame.draw.rect(display, colors.white, [x[0], x[1], self.block, self.block])
 
 
 class Food:
     def __init__(self, food_x: int, food_y: int) -> None:
-        # Food position
-        self.food_x = food_x
-        self.food_y = food_y
+        # Food vector
+        self.vector: Vector = Vector(food_x, food_y)
+    
+    def draw(self, display: pygame.Surface, colors: Colors, block: int) -> None:
+        pygame.draw.rect(display, colors.green, [self.vector.x, self.vector.y, block, block])
+
 
 class SnakeGame:
     def __init__(self):
@@ -58,7 +120,6 @@ class SnakeGame:
         # Create the snake object and initial settings
         self.snake = Snake(10, 20)
         self.snake.set_initial_position(self.display_width, self.display_height)
-        self.snake.set_initial_change_in_position(0, 0)
         # Create the food object and initial settings
         self.food: Food = Food(
             int(round(random.randrange(0, self.display_width - self.snake.block) / 10.0) * 10.0),
@@ -165,14 +226,10 @@ def gameLoop():
 
         # Display the game over screen
         while snake_game.game_close == True:
-            # Check if the display width and height are set
-            if snake_game.display is None:
-                raise ValueError("The display must be set.")
-
             # Display the game over screen
             snake_game.draw_game_over_screen(colors)
             
-            # Set the event handling
+            # Set the event handling for the game over screen
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_q:
@@ -181,7 +238,7 @@ def gameLoop():
                     if event.key == pygame.K_c:
                         gameLoop()
 
-        # Set the event handling
+        # Set the event handling for the game
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 snake_game.game_over = True
@@ -209,7 +266,7 @@ def gameLoop():
         snake_game.display.fill(colors.blue)
 
         # Draw the food
-        pygame.draw.rect(snake_game.display, colors.green, [food_x, food_y, snake_game.snake.block, snake_game.snake.block])
+        pygame.draw.rect(snake_game.display, colors.green, [snake_game.food.x, snake_game.food.y, snake_game.snake.block, snake_game.snake.block])
 
         # Initialize the snake head
         snake_Head = []
@@ -218,20 +275,20 @@ def gameLoop():
         snake_game.snake.list.append(snake_Head)
 
         # Draw the snake
-        if len(snake_game.snake.list) > snake_length:
+        if len(snake_game.snake.list) > snake_game.snake.length:
             del snake_game.snake.list[0]
 
         for x in snake_game.snake.list[:-1]:
             if x == snake_Head:
-                game_close = True
+                snake_game.game_close = True
 
         draw_snake(snake_game.display, colors, snake_game.snake.list, snake_game.snake.block)
         pygame.display.update()
 
         # Check if the snake has consumed the food
-        food_x, food_y, snake_length = check_food_consumption(x1, y1, snake_game.food.food_x, food_y,
+        snake_game.food.x, snake_game.food.y, snake_game.snake.length = check_food_consumption(x1, y1, snake_game.food.x, snake_game.food.y,
                                                               snake_game.display_width, snake_game.display_height,
-                                                              snake_game.snake.block, snake_length)
+                                                              snake_game.snake.block, snake_game.snake.length)
 
         snake_game.clock.tick(snake_game.snake.speed)
 
