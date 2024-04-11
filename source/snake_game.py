@@ -35,7 +35,7 @@ class Snake:
         # Snake head and body
         self.head: list = []
         self.list: list = []
-        self.length: int = 1
+        self.length: int = 3
         # Snake vector
         self.vector: Vector = Vector(0, 0)
 
@@ -127,7 +127,7 @@ class SnakeGame:
 
         # Set the game state
         self.game_over: bool = False
-        self.game_close: bool = False
+        self.game_quit: bool = False
 
         # Create the snake object and initial settings
         self.snake = Snake()
@@ -140,19 +140,11 @@ class SnakeGame:
             int(round(random.randrange(0, self.display_height - self.snake.block_size) / 10.0) * 10.0)
         )
 
-    def check_boundary(self, x1: int, y1: int) -> bool:
-        # Check if the display width and height are set
-        if self.display_width is None or self.display_height is None:
-            raise ValueError("The display width and height must be set.")
-        
+    def check_boundary(self, x1: int, y1: int) -> bool:        
         # Check if the snake has hit the boundary
         return x1 >= self.display_width or x1 < 0 or y1 >= self.display_height or y1 < 0
 
-    def check_collision(self, snake_Head: list) -> bool:
-        # Check if the snake list is set
-        if self.snake.list is None:
-            raise ValueError("The length of the snake must be set.")
-        
+    def check_collision(self, snake_Head: list) -> bool:       
         # Check if the snake has collided with itself (i.e. the snake head collides with the snake body)
         for x in self.snake.list[:-1]:
             if x == snake_Head:
@@ -167,35 +159,12 @@ class SnakeGame:
             self.snake.length += 1
             self.snake.update_body()
     
-    def handle_events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.game_over = True
-                self.game_close = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    self.snake.move_up()
-                elif event.key == pygame.K_DOWN:
-                    self.snake.move_down()
-                elif event.key == pygame.K_LEFT:
-                    self.snake.move_left()
-                elif event.key == pygame.K_RIGHT:
-                    self.snake.move_right()
-    
     def check_boundaries(self):
         x1, y1 = self.snake.get_head_position()
         if x1 >= self.display_width or x1 < 0 or y1 >= self.display_height or y1 < 0:
-            self.game_close = True
+            self.game_quit = True
     
-    def draw_game_over_screen(self) -> None:
-        # Check if the display is set
-        if self.display is None:
-            raise ValueError("The display must be set.")
-        
-        # Check if the display width and height are set
-        if self.display_width is None or self.display_height is None:
-            raise ValueError("The display width and height must be set.")
-        
+    def draw_game_over_screen(self) -> None:        
         # Display the game over screen
         self.display.fill(self.colors.blue)
 
@@ -216,14 +185,57 @@ class SnakeGame:
 
         # Update the display
         pygame.display.update()
+
+        # Game over loop
+        game_over = True
+        while game_over:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    game_over = False
+                    pygame.quit()
+                    quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_q:
+                        game_over = False
+                        pygame.quit()
+                        quit()
+                    if event.key == pygame.K_c:
+                        self.reset_game()
+                        game_over = False
     
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.game_over = True
+                self.game_quit = True
+            elif event.type == pygame.KEYDOWN:
+                # Handle snake movement when game is active
+                if not self.game_over:
+                    if event.key == pygame.K_UP:
+                        self.snake.move_up()
+                    elif event.key == pygame.K_DOWN:
+                        self.snake.move_down()
+                    elif event.key == pygame.K_LEFT:
+                        self.snake.move_left()
+                    elif event.key == pygame.K_RIGHT:
+                        self.snake.move_right()
+                # Handle game over controls (quit, play again)
+                elif self.game_over:
+                    if event.key == pygame.K_q:
+                        self.game_quit = True
+                    elif event.key == pygame.K_c:
+                        self.reset_game()
+
     def game_loop(self):
         # Start the game loop
-        while not self.game_over:
+        while not self.game_quit:
             # Check if the game is over
-            while self.game_close == True:
+            while self.game_over:
                 self.draw_game_over_screen()
                 self.handle_events()
+                # Break out of the outer loop if game is reset
+                if not self.game_over:
+                    break
 
             # Handle the events
             self.handle_events()
@@ -248,13 +260,37 @@ class SnakeGame:
 
             # Update the clock
             self.clock.tick(self.snake.speed)
+    
+    def run(self) -> None:
+        while not self.game_over:
+            self.game_loop()
 
+            if self.game_quit:
+                self.draw_game_over_screen()
+            
         pygame.quit()
         quit()
+    
+    def reset_game(self) -> None:
+        # Reset the snake
+        self.snake = Snake()
+        self.snake.set_initial_position(self.display_width, self.display_height)
+        self.snake.set_initial_change_in_position(0, 0)
+
+        # Reset the food
+        self.food = Food(
+            int(round(random.randrange(0, self.display_width - self.snake.block_size) / 10.0) * 10.0),
+            int(round(random.randrange(0, self.display_height - self.snake.block_size) / 10.0) * 10.0)
+        )
+
+        # Reset the game state
+        self.game_over = False
+        self.game_quit = False
+
 
 def main():
-    snake_game = SnakeGame()
-    snake_game.game_loop()
+    game = SnakeGame()
+    game.run()
 
 
 if __name__ == '__main__':
