@@ -1,2 +1,2 @@
-# snake-game
-Snake Game built in Python
+# Snake Game in Python
+Snake Game built in Python using the PyGame library.
