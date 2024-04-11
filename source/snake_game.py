@@ -30,7 +30,7 @@ class Vector:
 class Snake:
     def __init__(self) -> None:
         # Snake parameters
-        self.block: int = 10
+        self.block_size: int = 10
         self.speed: int = 20
         # Snake head and body
         self.head: list = []
@@ -49,19 +49,19 @@ class Snake:
         self.vector.dy = y1_change
 
     def move_up(self) -> None:
-        self.vector.dy = -self.block
+        self.vector.dy = -self.block_size
         self.vector.dx = 0
 
     def move_down(self) -> None:
-        self.vector.dy = self.block
+        self.vector.dy = self.block_size
         self.vector.dx = 0
     
     def move_left(self) -> None:
-        self.vector.dx = -self.block
+        self.vector.dx = -self.block_size
         self.vector.dy = 0
     
     def move_right(self) -> None:
-        self.vector.dx = self.block
+        self.vector.dx = self.block_size
         self.vector.dy = 0
     
     def get_head_position(self) -> tuple:
@@ -74,6 +74,8 @@ class Snake:
         # Update the head position
         x1 += self.vector.dx
         y1 += self.vector.dy
+        self.vector.x = x1
+        self.vector.y = y1
         self.list.append([x1, y1])
 
         # Check if the length of the snake is greater than the required length
@@ -92,7 +94,7 @@ class Snake:
 
     def draw(self, display: pygame.Surface, colors: Colors) -> None:
         for x in self.list:
-            pygame.draw.rect(display, colors.white, [x[0], x[1], self.block, self.block])
+            pygame.draw.rect(display, colors.white, [x[0], x[1], self.block_size, self.block_size])
 
 
 class Food:
@@ -134,8 +136,8 @@ class SnakeGame:
 
         # Create the food object and initial settings
         self.food: Food = Food(
-            int(round(random.randrange(0, self.display_width - self.snake.block) / 10.0) * 10.0),
-            int(round(random.randrange(0, self.display_height - self.snake.block) / 10.0) * 10.0)
+            int(round(random.randrange(0, self.display_width - self.snake.block_size) / 10.0) * 10.0),
+            int(round(random.randrange(0, self.display_height - self.snake.block_size) / 10.0) * 10.0)
         )
 
     def check_boundary(self, x1: int, y1: int) -> bool:
@@ -157,13 +159,13 @@ class SnakeGame:
                 return True
         return False
 
-    def check_food_consumption(self) -> tuple:       
+    def check_food_consumption(self) -> None:       
         # Check if the snake has consumed the food
         if self.snake.vector.x == self.food.vector.x and self.snake.vector.y == self.food.vector.y:
-            self.food.vector.x = int(round(random.randrange(0, self.display_width - self.snake.block) / 10.0) * 10.0)
-            self.food.vector.y = int(round(random.randrange(0, self.display_height - self.snake.block) / 10.0) * 10.0)
+            self.food.vector.x = int(round(random.randrange(0, self.display_width - self.snake.block_size) / 10.0) * 10.0)
+            self.food.vector.y = int(round(random.randrange(0, self.display_height - self.snake.block_size) / 10.0) * 10.0)
             self.snake.length += 1
-        return self.food.vector.x, self.food.vector.y
+            self.snake.update_body()
     
     def handle_events(self):
         for event in pygame.event.get():
@@ -184,23 +186,6 @@ class SnakeGame:
         x1, y1 = self.snake.get_head_position()
         if x1 >= self.display_width or x1 < 0 or y1 >= self.display_height or y1 < 0:
             self.game_close = True
-    
-    # def draw_snake(self, colors: Colors) -> None:
-    #     # Check if the display width and height are set
-    #     if self.display is None:
-    #         raise ValueError("The display must be set.")
-        
-    #     # Check if the snake block is set
-    #     if self.snake.block is None:
-    #         raise ValueError("The snake block must be set.")
-        
-    #     # Check if the snake list is set
-    #     if self.snake.list is None:
-    #         raise ValueError("The length of the snake must be set.")
-        
-    #     # Draw the snake
-    #     for x in self.snake.list:
-    #         pygame.draw.rect(self.display, colors.white, [x[0], x[1], self.snake.block, self.snake.block])
     
     def draw_game_over_screen(self) -> None:
         # Check if the display is set
@@ -250,13 +235,13 @@ class SnakeGame:
             # Draw the food
             self.food.draw(self.display, self.colors)
 
+            # Check if the snake has consumed the food
+            self.check_food_consumption()
+
             # Update and draw the snake
             self.snake.update_body()
             self.snake.draw(self.display, self.colors)
             self.snake.check_self_collision()
-
-            # Check if the snake has consumed the food
-            self.check_food_consumption()
 
             # Update the display
             pygame.display.update()
