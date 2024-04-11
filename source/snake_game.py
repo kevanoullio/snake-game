@@ -233,19 +233,35 @@ class SnakeGame:
         pygame.display.update()
     
     def game_loop(self):
+        # Start the game loop
         while not self.game_over:
+            # Check if the game is over
             while self.game_close == True:
                 self.draw_game_over_screen()
                 self.handle_events()
 
+            # Handle the events
             self.handle_events()
             self.check_boundaries()
+
+            # Fill the background color
             self.display.fill(self.colors.blue)
+
+            # Draw the food
             self.food.draw(self.display, self.colors)
+
+            # Update and draw the snake
             self.snake.update_body()
+            self.snake.draw(self.display, self.colors)
             self.snake.check_self_collision()
+
+            # Check if the snake has consumed the food
             self.check_food_consumption()
+
+            # Update the display
             pygame.display.update()
+
+            # Update the clock
             self.clock.tick(self.snake.speed)
 
         pygame.quit()
