@@ -42,6 +42,7 @@ class Snake:
     def set_initial_position(self, display_width: int, display_height: int) -> None:
         self.vector.x = int(display_width / 2)
         self.vector.y = int(display_height / 2)
+        self.list.append([self.vector.x, self.vector.y])
 
     def set_initial_change_in_position(self, x1_change: int, y1_change: int) -> None:
         self.vector.dx = x1_change
@@ -129,6 +130,7 @@ class SnakeGame:
         # Create the snake object and initial settings
         self.snake = Snake()
         self.snake.set_initial_position(self.display_width, self.display_height)
+        self.snake.set_initial_change_in_position(0, 0)
 
         # Create the food object and initial settings
         self.food: Food = Food(
@@ -239,7 +241,7 @@ class SnakeGame:
             self.handle_events()
             self.check_boundaries()
             self.display.fill(self.colors.blue)
-            self.food.draw(self.display, self.colors.green)
+            self.food.draw(self.display, self.colors)
             self.snake.update_body()
             self.snake.check_self_collision()
             self.check_food_consumption()
