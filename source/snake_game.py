@@ -49,18 +49,30 @@ class Snake:
         self.vector.dy = y1_change
 
     def move_up(self) -> None:
+        # Prevent the snake from moving in the opposite direction
+        if self.vector.dy == self.block_size:
+            return
         self.vector.dy = -self.block_size
         self.vector.dx = 0
 
     def move_down(self) -> None:
+        # Prevent the snake from moving in the opposite direction
+        if self.vector.dy == -self.block_size:
+            return
         self.vector.dy = self.block_size
         self.vector.dx = 0
     
     def move_left(self) -> None:
+        # Prevent the snake from moving in the opposite direction
+        if self.vector.dx == self.block_size:
+            return
         self.vector.dx = -self.block_size
         self.vector.dy = 0
     
     def move_right(self) -> None:
+        # Prevent the snake from moving in the opposite direction
+        if self.vector.dx == -self.block_size:
+            return
         self.vector.dx = self.block_size
         self.vector.dy = 0
     
